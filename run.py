@@ -99,6 +99,9 @@ i_itm = np.random.randint(0, n_itm, size=n_rat)
 y = expit(b_usr[i_usr] + b_itm[i_itm] +
           np.sum(v_usr[i_usr, :] * v_itm[i_itm, :], axis=1))
 y = np.rint(y)
+print(b_usr)
+print(v_itm)
+print(y)
 
 
 model = RCFM(n_usr, n_itm, k)
