@@ -4,13 +4,15 @@ from torch import nn
 
 
 class NuclearEmbedding(nn.Module):
-    def __init__(self, n, max_rank=100, threshold=1.0, min_rank=2):
+    def __init__(self, n, max_rank=100, threshold=1.0, min_rank=2,
+                 do_svd=True):
         super().__init__()
         self.u = nn.Embedding(n, max_rank)
         self.s = nn.Parameter(torch.ones(max_rank).uniform_(0, 1))
         self.vt = nn.Embedding(n, max_rank)
         self.threshold = threshold
         self.min_rank = min_rank
+        self.do_svd = do_svd
         # Initialize close orthogonal
         for _ in range(100):
             self._update_u_v(truncate=False)
@@ -50,7 +52,7 @@ class NuclearEmbedding(nn.Module):
         V, _ = torch.qr(X_U)
         X_V = self.linear(V)
         U, R = torch.qr(X_V)
-        S = torch.abs(torch.diag(R))
+        S = torch.diag(R)
 
         # Replace old values with orthogonal ones
         u[...] = U[...]
@@ -69,7 +71,8 @@ class NuclearEmbedding(nn.Module):
                 print(f"rank: {rank}")
 
     def forward(self, i, j):
-        self._update_u_v()
+        if self.do_svd:
+            self._update_u_v()
         u = self.u(i)
         s = self.s
         vt = self.vt(j)

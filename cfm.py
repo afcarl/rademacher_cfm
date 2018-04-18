@@ -14,9 +14,9 @@ from nuclear_embedding import NuclearEmbedding
 
 
 class CFM(nn.Module):
-    def __init__(self, n, k, threshold=1.0):
+    def __init__(self, n, k, **kwargs):
         super().__init__()
-        self.intx = NuclearEmbedding(n, k * 10, threshold=threshold)
+        self.intx = NuclearEmbedding(n, k * 10, **kwargs)
         self.bias = nn.Embedding(n, 1)
         self.c = Parameter(torch.randn(1))
         self.k = k
@@ -55,7 +55,7 @@ print(v_itm)
 print(y)
 
 
-model = CFM(n_usr + n_itm, k, threshold=1e5)
+model = CFM(n_usr + n_itm, k, threshold=1e5, do_svd=True)
 # optim = Adam(model.parameters(), lr=1e-4)
 optim = SGD(model.parameters(), lr=1e-2)
 
@@ -64,6 +64,3 @@ trainer = Trainer(model, optim, batchsize=512, window=32,
                   callbacks=callbacks, seed=42)
 for e in range(1000):
     trainer.fit(i_usr, n_usr + i_itm, y)
-    print(e)
-    print(model.intx.u.weight.data[0])
-    print(model.intx.vt.weight.data[0])
